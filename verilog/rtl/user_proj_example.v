@@ -67,14 +67,10 @@ localparam DATA_WIDTH   = 32,
            ADDR_MASK    = 'hffffffe0,
            IRQ_IO_PORT  = 12;
 
-reg  [1:0]     irq_r;
-
-// IO
-reg [127:0] la_data_out_r;
-assign la_data_out = la_data_out_r;
-assign io_oeb = 32'b1 << IRQ_IO_PORT;
-assign io_out = {{(`MPRJ_IO_PADS-1){1'b0}}, irq_r[1]} << IRQ_IO_PORT; // route IRQ to external pin
-
+assign la_data_out = 0;
+assign la_oen = 0;
+assign io_out = 0;
+assign io_oeb = ~0;
 
 wire active_cyc = wbs_cyc_i & wbs_stb_i;
 wire write_cyc = active_cyc & wbs_we_i;
@@ -142,15 +138,12 @@ always @(posedge wb_clk_i)
       solution_r[1] <= 0;
       status_r[0] <= 0;
       status_r[1] <= 0;
-      irq_r <= 0;
-      la_data_out_r <= 0;
    end
    else begin
       solution_r[1] <= solution_r[0];
       solution_r[0] <= solution;
       status_r[1] <= status_r[0];
       status_r[0] <= status;
-      irq_r <= {irq_r[0], irq_o};
    end
 
 endmodule
