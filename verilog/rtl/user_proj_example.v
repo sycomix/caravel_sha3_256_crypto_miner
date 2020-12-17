@@ -122,7 +122,7 @@ wire irq_o;
 
 // SHA3_REG-256 mining core
 sha3_256_miner_core #(
-   .STAGES(4)
+   .STAGES(8)
 )
 s3c (
    .clk(user_clock2),

@@ -1,9 +1,9 @@
 magic
 tech sky130A
 magscale 1 2
-timestamp 1608137517
+timestamp 1608160840
 << obsli1 >>
-rect 8125 3077 572856 699839
+rect 9689 6953 572856 699839
 << obsm1 >>
 rect 566 552 582820 701808
 << metal2 >>
