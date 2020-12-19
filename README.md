@@ -49,7 +49,7 @@ for mining using a multi-stage permutation pipeline.
 
 ## Implementation
 
-This ASIC is generated using end-to-end open source EDA tools. A 12 stage pipeline design is
+This ASIC is generated using end-to-end open source EDA tools. A 8 stage pipeline design is
 used in two phases since a fully unrolled 24 stage pipeline exceeds the capacity of this ASIC.
 
 ### Miner Component
@@ -147,7 +147,7 @@ off with a random seed, it will occasionally not converge on 0 violations.
 
 ### Future
 
-Currently this 12 stage pipeline design is fully autorouted and uses about 990,000 cells and is the
+Currently this 8 stage pipeline design is fully autorouted and uses about 990,000 cells and is the
 most that can be crammed into the available die space. The layout is very sparse in order to get
 successful routing. It may be possible to optimize and harden smaller repeating blocks
 the place then manually to achieve a fully unrolled 24 stage pipeline. This would achieve
