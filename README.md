@@ -159,8 +159,8 @@ TBD
 
 ## Acknowledgments
 
-Many thanks to Mohamed Kassem, Tim Edwards, Sylvain Munaut, Philipp Gühring, and many others without whose help
-this project would not be possible.
+Special thanks to Mohamed Kassem, Tim Edwards, Amr Gouhar, Sylvain Munaut, Philipp Gühring, and many others without whose help
+this project would not have been possible.
 
 Long live open-everything.
 
