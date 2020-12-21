@@ -49,7 +49,7 @@ for mining using a multi-stage permutation pipeline.
 
 ## Implementation
 
-This ASIC is generated using end-to-end open source EDA tools. A 8 stage pipeline design is
+This ASIC is generated using end-to-end open source EDA tools. A 12  stage pipeline design is
 used in two phases since a fully unrolled 24 stage pipeline exceeds the capacity of this ASIC.
 
 ### Miner Component
@@ -110,11 +110,10 @@ The component is an Wishbone bus device with a 23 word memory mapped register fi
 
 ```
 Top module:  \user_proj_example
-Used module:     \sha3_256_miner_core
+Used module:     \sha3_256_miner_core_12
 Used module:         \sha3_256_miner_round
 Used module:             \permutation
 Used module:     \sha3_256_miner_regs
-Parameter \STAGES = 8
 
 ```
 
@@ -147,7 +146,7 @@ off with a random seed, it will occasionally not converge on 0 violations.
 
 ### Future
 
-Currently this 8 stage pipeline design is fully autorouted and uses about 990,000 cells and is the
+Currently this 12 stage pipeline design is fully autorouted and uses over 300,000 cells and is the
 most that can be crammed into the available die space. The layout is very sparse in order to get
 successful routing. It may be possible to optimize and harden smaller repeating blocks
 the place then manually to achieve a fully unrolled 24 stage pipeline. This would achieve
@@ -159,7 +158,9 @@ TBD
 
 ## Acknowledgments
 
-Special thanks to Mohamed Kassem, Tim Edwards, Amr Gouhar, Sylvain Munaut, Philipp Gühring, and many others without whose help
+Special thanks to Mohamed Kassem, Tim Edwards, Amr Gouhar, Sylvain Munaut, Philipp Gühring, and
+the MPW teams at efabless, Skywater, and Google
+without whose help
 this project would not have been possible.
 
 Long live open-everything.
