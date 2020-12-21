@@ -13,14 +13,14 @@ set ::env(CLOCK_NET) "wb_clk_i user_clock2"
 set ::env(CLOCK_PERIOD) "10"
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 2820 3420"
+set ::env(DIE_AREA) "0 0 2840 3440"
 set ::env(DESIGN_IS_CORE) 0
 
 set ::env(FP_PIN_ORDER_CFG) $script_dir/pin_order.cfg
 
 
 set ::env(PL_BASIC_PLACEMENT) 0
-set ::env(PL_TARGET_DENSITY) 0.19
+set ::env(PL_TARGET_DENSITY) 0.3
 set ::env(ROUTING_CORES) 16
 set ::env(DIODE_INSERTION_STRATEGY) 4
 set ::env(BASE_SDC_FILE) "$script_dir/../../verilog/rtl/user_proj_example.sdc"

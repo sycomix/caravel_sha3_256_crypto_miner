@@ -17,6 +17,10 @@
 `default_nettype none
 `timescale 1ns / 1ps
 
+`ifndef MPRJ_IO_PADS
+`define MPRJ_IO_PADS 36
+`endif
+
 module user_proj_example (
 `ifdef USE_POWER_PINS
     inout wire vdda1,        // User area 1 3.3V supply
@@ -111,9 +115,7 @@ s3r
 );
 
 // SHA3_REG-256 mining core
-sha3_256_miner_core #(
-   .STAGES(8)
-)
+sha3_256_miner_core_12
 s3c (
    .clk(user_clock2),
    .rst(wb_rst_i),
@@ -248,7 +250,7 @@ endmodule
 
 `define SPONGE 1600
 
-module sha3_256_miner_core (
+module sha3_256_miner_core_248 (
    input wire           clk,
    input wire           rst,
    input wire  [255:0]  header,
@@ -409,8 +411,165 @@ end
         
 endmodule
 
+module sha3_256_miner_core_12 (
+   input wire           clk,
+   input wire           rst,
+   input wire  [255:0]  header,
+   input wire  [255:0]  difficulty,
+   input wire  [63:0]   start_nonce,
+   input wire  [18:0]   control,
+   output reg  [63:0]   solution,
+   output wire [2:0]    status,
+   output reg           irq
+);
 
-`define SPONGE 1600
+localparam STAGES = 12;
+localparam SHA3_STAGES = 24;
+   
+// Synchronize control signals
+reg [18:0] ctl_r [1:0];
+
+always @(posedge clk)
+begin
+   ctl_r[0] = rst ? 0 : control;
+   ctl_r[1] = rst ? 0 : ctl_r[0];
+end
+
+// Front and back padding values and control signals
+wire [7:0] ctl_padf_w = ctl_r[1][18:11];
+wire [7:0] ctl_padl_w = ctl_r[1][10:3];
+wire       ctl_halt_w = ctl_r[1][2];
+wire       ctl_test_w = ctl_r[1][1];
+wire        ctl_run_w = ctl_r[1][0];
+
+// Only hashes out of phase 0 are valid except for the
+// 1st phase after run is enabled. Skip the 1st 8 cycles
+reg [4:0] valid_hash_r;
+wire valid_hash_w = valid_hash_r == 0;
+
+// Modulo 24 cycle counter
+reg [4:0] cycles_r;
+
+// Current status
+assign status = {ctl_test_w, ctl_run_w, irq & ~ctl_halt_w};
+
+// Constant 768 bit pad
+wire [767:0] ctl_pad_w = {56'b0, ctl_padf_w, 640'b0, ctl_padl_w, 56'b0};
+
+// big and little endian input
+wire [319:0] in_le_w = {header, solution};
+wire [319:0] in_be_w;
+
+//assign in_be_w = in_le_w;
+`define low_bit(w,b)   ((w)*64 + (b)*8)
+`define low_bit2(w,b)  `low_bit(w,7-b)
+`define high_bit(w,b)  (`low_bit(w,b) + 7)
+`define high_bit2(w,b) (`low_bit2(w,b) + 7)
+
+genvar i, w, b;
+
+// Convert the input data
+generate
+for(w = 0; w < 5; w = w + 1) begin : L0
+   for(b = 0; b < 8; b = b + 1) begin : L1
+      assign in_be_w[`high_bit(w,b):`low_bit(w,b)] = in_le_w[`high_bit2(w,b):`low_bit2(w,b)];
+   end
+end
+endgenerate
+
+// Round constantts, bits 63, 31, 15, 7, 3, 1 and 0
+wire [6:0] rc_w [0:23];
+assign rc_w[0]  = 'h01; assign rc_w[1]  = 'h1a; assign rc_w[2]  = 'h5e; assign rc_w[3]  = 'h70;
+assign rc_w[4]  = 'h1f; assign rc_w[5]  = 'h21; assign rc_w[6]  = 'h79; assign rc_w[7]  = 'h55;
+assign rc_w[8]  = 'h0e; assign rc_w[9]  = 'h0c; assign rc_w[10] = 'h35; assign rc_w[11] = 'h26;
+assign rc_w[12] = 'h3f; assign rc_w[13] = 'h4f; assign rc_w[14] = 'h5d; assign rc_w[15] = 'h53;
+assign rc_w[16] = 'h52; assign rc_w[17] = 'h48; assign rc_w[18] = 'h16; assign rc_w[19] = 'h66;
+assign rc_w[20] = 'h79; assign rc_w[21] = 'h58; assign rc_w[22] = 'h21; assign rc_w[23] = 'h74;
+
+// State stage interconnections.
+wire [1599:0] state_w [0:STAGES - 1];
+
+// Current phase of 24 rounds (0 to L2S-1). Easy divide by STAGES.
+wire pass_w = (cycles_r < STAGES) ? 0 : 1;
+
+// Special case, round 0 which has per pass input and simple rc calculation
+sha3_256_miner_round r_0(
+   .clk(clk),
+   .rc(rc_w[pass_w ? 12 : 0]),
+   .in((pass_w != 0) ? state_w[STAGES - 1] : {in_be_w, ctl_pad_w, 512'b0}), 
+   .out(state_w[0])
+);
+
+// Rounds 1-7 differ in that they always take their input from the previous
+// round, but use a delayed round calculation of the appropriate round
+// constant. 
+
+`define mod12(x) ((x < STAGES) ? x : x - STAGES)
+`define d12m12(x) ((x < STAGES) ? 0 : STAGES)  
+
+generate
+for(i = 1; i < STAGES; i = i + 1)
+begin : L3
+   wire [4:0] t0 = cycles_r - i + ((cycles_r < i) ? SHA3_STAGES : 0);
+   wire [4:0] t1 = `d12m12(t0) + `mod12(i); // Calc RC value offset for this stage
+   sha3_256_miner_round r_n(
+      .clk(clk),
+      .rc(rc_w[t1]),
+      .in(state_w[i - 1]),
+      .out(state_w[i])
+   );
+end
+endgenerate
+
+// Final hash is the little endian upper 256 bits of sponge.
+wire [255:0] out_hash_be_w = state_w[STAGES - 1][`SPONGE-1:`SPONGE-256];
+wire [255:0] out_hash_le_w;
+
+generate
+for(w = 0; w < 4; w = w + 1) begin : L4
+   for(b = 0; b < 8; b = b + 1) begin : L5
+      assign out_hash_le_w[`high_bit(w,b):`low_bit(w,b)] = out_hash_be_w[`high_bit2(w,b):`low_bit2(w,b)];
+   end
+end
+endgenerate
+
+
+// Hash is less than or equal to difficulty
+wire match_w = (ctl_test_w ? (out_hash_le_w == difficulty) : (out_hash_le_w <= difficulty))
+   && valid_hash_w && (pass_w == 0);
+   
+always @(posedge clk)
+begin
+   if (rst | ~ctl_run_w) begin
+      irq <= 0;
+      valid_hash_r <= SHA3_STAGES;
+      cycles_r <= 5'b11111;
+      solution <= start_nonce;
+   end
+   else begin
+      if (!irq) begin
+         // Count up to 8 (end of 1st phase)
+         valid_hash_r <= valid_hash_w ? 5'b0 : valid_hash_r - 1'b1;
+         // Modulo 24 cycle count
+         cycles_r <= cycles_r == (SHA3_STAGES - 1) ? 5'b0 : cycles_r + 1'b1;
+                           
+         if ((match_w | ctl_halt_w) & valid_hash_w) begin
+            solution <= solution - STAGES; // control[0]Solution is 8 cycles old.
+            irq <= 1; // report match with IRQ and halt
+         end
+         else // Otherwise increment the nonce for the next cycle
+            solution <= (pass_w != 0) ? solution : solution + 1;
+      end
+   end
+end
+
+`undef low_bit
+`undef low_bit2
+`undef high_bit
+`undef high_bit2
+        
+endmodule
+
 
 module sha3_256_miner_round (
    input wire                clk,
