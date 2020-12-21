@@ -1,0 +1,6 @@
+#!/bin/bash
+cd openlane
+make user_proj_example | tee ../user_proj_example.log
+make user_project_wrapper | tee ../user_project_wrapper.log
+cd ..
+make ship | tee ../ship.log
