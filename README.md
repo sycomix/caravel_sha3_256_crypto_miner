@@ -156,13 +156,6 @@ twice the performance of the current version.
 
 TBD
 
-## Acknowledgments
-
-Special thanks to Mohamed Kassem, Tim Edwards, Amr Gouhar, Sylvain Munaut, Philipp Gühring, and
-the MPW teams at efabless, Skywater, and Google
-without whose help
-this project would not have been possible.
-
 Long live open-everything.
 
 [Caravel]: https://github.com/efabless/caravel.git
