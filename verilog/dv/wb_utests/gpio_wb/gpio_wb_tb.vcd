@@ -1,0 +1,205 @@
+$date
+	Mon Dec 21 12:01:00 2020
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module gpio_wb_tb $end
+$var wire 32 ! gpio_adr [31:0] $end
+$var wire 32 " gpio_oeb_adr [31:0] $end
+$var wire 32 # gpio_pd_adr [31:0] $end
+$var wire 32 $ gpio_pu_adr [31:0] $end
+$var wire 32 % wb_dat_o [31:0] $end
+$var wire 1 & wb_ack_o $end
+$var reg 16 ' gpio_data [15:0] $end
+$var reg 16 ( gpio_in_pad [15:0] $end
+$var reg 16 ) gpio_oeb [15:0] $end
+$var reg 16 * gpio_pd [15:0] $end
+$var reg 16 + gpio_pu [15:0] $end
+$var reg 32 , wb_adr_i [31:0] $end
+$var reg 1 - wb_clk_i $end
+$var reg 1 . wb_cyc_i $end
+$var reg 32 / wb_dat_i [31:0] $end
+$var reg 1 0 wb_rst_i $end
+$var reg 4 1 wb_sel_i [3:0] $end
+$var reg 1 2 wb_stb_i $end
+$var reg 1 3 wb_we_i $end
+$scope module uut $end
+$var wire 1 4 gpio_in_pad $end
+$var wire 4 5 iomem_we [3:0] $end
+$var wire 1 6 resetn $end
+$var wire 1 7 valid $end
+$var wire 1 & wb_ack_o $end
+$var wire 32 8 wb_adr_i [31:0] $end
+$var wire 1 - wb_clk_i $end
+$var wire 1 . wb_cyc_i $end
+$var wire 32 9 wb_dat_i [31:0] $end
+$var wire 1 0 wb_rst_i $end
+$var wire 4 : wb_sel_i [3:0] $end
+$var wire 1 2 wb_stb_i $end
+$var wire 1 3 wb_we_i $end
+$var wire 32 ; wb_dat_o [31:0] $end
+$var wire 1 < ready $end
+$var wire 1 = gpio_pu $end
+$var wire 1 > gpio_pd $end
+$var wire 1 ? gpio_oeb $end
+$var wire 1 @ gpio $end
+$scope module gpio_ctrl $end
+$var wire 1 - clk $end
+$var wire 1 4 gpio_in_pad $end
+$var wire 32 A iomem_addr [31:0] $end
+$var wire 1 7 iomem_valid $end
+$var wire 32 B iomem_wdata [31:0] $end
+$var wire 1 C iomem_wstrb $end
+$var wire 1 6 resetn $end
+$var wire 1 D gpio_sel $end
+$var wire 1 E gpio_pu_sel $end
+$var wire 1 F gpio_pd_sel $end
+$var wire 1 G gpio_oeb_sel $end
+$var reg 1 @ gpio $end
+$var reg 1 ? gpio_oeb $end
+$var reg 1 > gpio_pd $end
+$var reg 1 = gpio_pu $end
+$var reg 32 H iomem_rdata [31:0] $end
+$var reg 1 < iomem_ready $end
+$upscope $end
+$upscope $end
+$scope task read $end
+$var reg 33 I addr [32:0] $end
+$upscope $end
+$scope task write $end
+$var reg 33 J addr [32:0] $end
+$var reg 33 K data [32:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+bx K
+bx J
+bx I
+bx H
+0G
+0F
+0E
+1D
+0C
+b0 B
+b0 A
+x@
+x?
+x>
+x=
+x<
+bx ;
+b0 :
+b0 9
+b0 8
+07
+06
+b0 5
+04
+03
+02
+b0 1
+10
+b0 /
+0.
+0-
+b0 ,
+bx +
+bx *
+bx )
+b0 (
+bx '
+x&
+bx %
+b100001000000000000000000001000 $
+b100001000000000000000000001100 #
+b100001000000000000000000000100 "
+b100001000000000000000000000000 !
+$end
+#1000
+0>
+0=
+1?
+0@
+1-
+#2000
+16
+0-
+00
+#3000
+0&
+0<
+1-
+#4000
+14
+0-
+b1010000000000000 K
+b100001000000000000000000000000 J
+b1010000000000000 '
+b1111111111111111 (
+#5000
+1C
+b1111 5
+17
+b1010000000000000 /
+b1010000000000000 9
+b1010000000000000 B
+b100001000000000000000000000000 ,
+b100001000000000000000000000000 8
+b100001000000000000000000000000 A
+13
+b1111 1
+b1111 :
+1.
+12
+1-
+#6000
+0-
+#7000
+b1 %
+b1 ;
+b1 H
+1&
+1<
+1-
+#8000
+0-
+#9000
+07
+02
+0.
+0&
+0<
+1-
+#10000
+0-
+#11000
+0C
+b0 5
+17
+03
+1.
+12
+1-
+b100001000000000000000000000000 I
+#12000
+0-
+#13000
+1&
+1<
+1-
+#14000
+0-
+#15000
+07
+02
+0.
+0&
+0<
+1-

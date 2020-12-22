@@ -47,7 +47,7 @@ module la_test1_tb;
 		// Repeat cycles of 1000 clock edges as needed to complete testbench
 		repeat (200) begin
 			repeat (1000) @(posedge clock);
-			// $display("+1000 cycles");
+			$display("+1000 cycles");
 		end
 		$display("%c[1;31m",27);
 		$display ("Monitor: Timeout, Test Mega-Project IO (RTL) Failed");

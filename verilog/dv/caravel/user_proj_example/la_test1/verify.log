@@ -1,0 +1,6 @@
+make[1]: Entering directory '/home/jcyr/caravel_sha3_256_crypto_miner/verilog/dv/caravel/user_proj_example/la_test1'
+/ef/apps/bin/riscv32-unknown-elf-gcc -march=rv32imc -mabi=ilp32 -Wl,-Bstatic,-T,../../sections.lds,--strip-debug -ffreestanding -nostdlib -o la_test1.elf ../../start.s la_test1.c
+make[1]: /ef/apps/bin/riscv32-unknown-elf-gcc: Command not found
+Makefile:51: recipe for target 'la_test1.elf' failed
+make[1]: *** [la_test1.elf] Error 127
+make[1]: Leaving directory '/home/jcyr/caravel_sha3_256_crypto_miner/verilog/dv/caravel/user_proj_example/la_test1'
