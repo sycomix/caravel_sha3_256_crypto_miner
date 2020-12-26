@@ -49,12 +49,35 @@ for mining using a multi-stage permutation pipeline.
 
 ## Implementation
 
-This ASIC is generated using end-to-end open source EDA tools. A 12  stage pipeline design is
-used in two phases since a fully unrolled 24 stage pipeline exceeds the capacity of this ASIC.
+This ASIC is generated using end-to-end open source EDA tools. A 12 stage pipeline design is used in two phases since
+a fully unrolled 24 stage pipeline exceeds the capacity of this ASIC. Each stage consists on an identical complex
+combinatorial chain of 1600 inputs, 6 control inputs and 1600 outputs. Each stage must render its 1600 output values,
+based on the inputs and altered according to the control inputs, within one clock cycles. Using 12 such linked stages
+and an appropriate feedback path we can generate a single hash per clock cycle half of the time. The maximum clock
+speed is determined by propagation delay of a single stage. The number of SHA3 hashes, the hash rate in mining
+parlance, that can be  generated using this type of folded pipeline approach is given by:
+
+F is the clock frequency in hertz
+S the number of stages (must be a divisor of 24. i.e., 1, 2 4 6 12, 24)
+H Hash rate
+
+H = (F * S) / 24
+
+A Wishbone client register file is implemented and serves for control and status by the picorv32 CPU core. This circuitry
+is conveniently clocked by the Wishbone bus clock. The 12 combinatorial stages however are clocked from a separate user
+programmable DLL clock, allowing hash rate adjustments. Proper synchronization is applied where timing domain crossing occurs.
+
+In mining we do not really care what the winning hash is, we only care that it meets the difficulty requirement and what
+nonce was used to achieve it. The nonce is a continuously incrementing counter so we simply freeze it when a match is found. 
+
+At a high level the chip is intended to function as a low level controller of the SHA3 pipeline, communication via the
+Caravel I2C or SPI ports to a larger computer to handle higher level control functions such as mining Internet protocols.
+
 
 ### Miner Component
 
-The component is an Wishbone bus device with a 23 word memory mapped register file for control and status. All user project Verilog source is contained in the verilog/rtl/sha3_256_miner* files/
+The component is an Wishbone bus device with a 23 word memory mapped register file for control and status. All user project
+Verilog source is contained in the verilog/rtl/user_proj_example.v file.
 
 #### User block interface.
 
