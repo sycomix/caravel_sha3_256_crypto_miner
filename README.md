@@ -52,10 +52,11 @@ for mining using a multi-stage permutation pipeline.
 This ASIC is generated using end-to-end open source EDA tools. A 12 stage pipeline design is used in two phases since
 a fully unrolled 24 stage pipeline exceeds the capacity of this ASIC. Each stage consists on an identical complex
 combinatorial chain of 1600 inputs, 6 control inputs and 1600 outputs. Each stage must render its 1600 output values,
-based on the inputs and altered according to the control inputs, within one clock cycles. Using 12 such linked stages
-and an appropriate feedback path we can generate a single hash per clock cycle half of the time. The maximum clock
-speed is determined by propagation delay of a single stage. The number of SHA3 hashes, the hash rate in mining
-parlance, that can be  generated using this type of folded pipeline approach is given by:
+based on the inputs and altered according to the control inputs, within one clock cycle. Using 12 such linked stages
+and an appropriate feedback path from the last to the first we can generate a single hash per clock cycle one half of
+the time. The maximum clock
+speed will be determined by the propagation delay of a single stage. The number of SHA3 hashes per second (hash rate in mining
+parlance) that can be  generated using this type of folded pipeline is given as follows:
 
 F is the clock frequency in hertz
 S the number of stages (must be a divisor of 24. i.e., 1, 2 4 6 12, 24)
@@ -63,15 +64,15 @@ H Hash rate
 
 H = (F * S) / 24
 
-A Wishbone client register file is implemented and serves for control and status by the picorv32 CPU core. This circuitry
+A Wishbone client register file is implemented and serves for control and status by the Caravel picorv32 CPU core. This circuitry
 is conveniently clocked by the Wishbone bus clock. The 12 combinatorial stages however are clocked from a separate user
 programmable DLL clock, allowing hash rate adjustments. Proper synchronization is applied where timing domain crossing occurs.
 
 In mining we do not really care what the winning hash is, we only care that it meets the difficulty requirement and what
 nonce was used to achieve it. The nonce is a continuously incrementing counter so we simply freeze it when a match is found. 
 
-At a high level the chip is intended to function as a low level controller of the SHA3 pipeline, communication via the
-Caravel I2C or SPI ports to a larger computer to handle higher level control functions such as mining Internet protocols.
+At a high level the chip is intended to function as a low level controller for the SHA3 pipeline, communicating via the
+Caravel I2C or SPI ports to a larger computer to handle higher level functions such as Internet mining protocols.
 
 
 ### Miner Component
@@ -97,9 +98,10 @@ Verilog source is contained in the verilog/rtl/user_proj_example.v file.
 | io_out | MPRJ_IO_PADS |  IO pin bus output |
 | io_oeb | MPRJ_IO_PADS |  IO pin bus output enable |
 | user_clock2 | 1 | 300 MHz miner core clock  |
-| irq_o | 1 |  Ative high when solution found (1-bit output) |
 
 #### Register file
+
+Each register occupies 4 bytes, starting at base address 0x30000000
 
 | Reg. # | Name | Read/Write | Description|
 | --- | --- | --- | --- |
@@ -115,9 +117,9 @@ Verilog source is contained in the verilog/rtl/user_proj_example.v file.
 
 | Bit # | Name | Description |
 | --- | --- | --- |
-| 0 | FOUND | Solution found. Solution is stored and IRQ is set. IRQ cleared with next ctl. reg. read. |
+| 0 | FOUND | Solution found. Solution is stored and status updated |
 | 1 | RUNNING | The run ctl bit is set and the solution nonce is auto-incrementing |
-| 2 | TESTING | The test ctl bit is set and compare diff equal |
+| 2 | TESTING | The test ctl bit is set and compare diff equal (for verification only)|
 
 #### Control register
 
@@ -125,7 +127,7 @@ Verilog source is contained in the verilog/rtl/user_proj_example.v file.
 | --- | --- | --- |
 | 0 | RUN | 0 - clear, 1 - auto increment the solution nonce and check hashes |
 | 1 | TEST | 0 - normal mode, 1 - test mode, look for exact match with diff |
-| 2 | HALT | 0 - normal mode, 1 - halt mining and raise interrupt |
+| 2 | HALT | 0 - normal mode, 1 - halt mining and update status |
 | 23-16 | PAD_LAST | last pad byte, 0x80 for KECCACK-256 and SHA3-256 |
 | 31-24 | PAD_FIRST | first pad byte, 0x01 for KECCACK-256, and 0x06 for SHA3-256 |
 
@@ -148,6 +150,8 @@ Used module:     \sha3_256_miner_regs
 
 [Openlane]
 
+[Magic]
+
 [Google Skywater PDK]
 
 ### Synthesizing
@@ -162,10 +166,11 @@ cd ..
 make ship
 ```
 
-This will create the artifacts for sending to the fab.
+This will create the preliminary Skywater fab input artifacts. Essentially a giant GDS file
+containing a full physical description of the system on a chip, in this case over 300,000
+logic cells and 1,000,000 copper traces.
 
-NOTE: This project is borderline routable at this point. Since the autorouter starts
-off with a random seed, it will occasionally not converge on 0 violations.
+NOTE: The entire process takes about 10 hours on a high end PC with plenty of memory.
 
 ### Future
 
@@ -185,3 +190,4 @@ Long live open-everything.
 [Openlane]: https://github.com/efabless/openlane.git
 [Google Skywater PDK]: https://github.com/google/skywater-pdk.git
 [Open MPW Shuttle Program]: https://www.efabless.com/open_shuttle_program
+[Magic]: http://opencircuitdesign.com/magic
