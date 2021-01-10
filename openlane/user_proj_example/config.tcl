@@ -26,3 +26,4 @@ set ::env(DIODE_INSERTION_STRATEGY) 4
 set ::env(BASE_SDC_FILE) "$script_dir/../../verilog/rtl/user_proj_example.sdc"
 set ::env(GLB_RT_MAXLAYER) 5
 #set ::env(MAGIC_GENERATE_LEF) 0
+set ::env(GLB_RT_OBS) "met5 $::env(DIE_AREA)"
