@@ -7,7 +7,7 @@ project:
   organization_url: "http://jeancyr.com"
   owner: "Jean M. Cyr"
   process: "SKY130"
-  project_name: "Caravel"
+  project_name: "Caravel_sha3_256_crypto_miner"
   tags: 
     - "Open MPW"
     - "SHA3 SoC Cryptominer"
