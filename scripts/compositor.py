@@ -39,9 +39,6 @@ if __name__ == '__main__':
     optionlist = []
     arguments = []
 
-    debugmode = False
-    keepmode = False
-
     for option in sys.argv[1:]:
         if option.find('-', 0) == 0:
             optionlist.append(option)
@@ -53,24 +50,17 @@ if __name__ == '__main__':
         usage()
         sys.exit(0)
 
-    if len(arguments) == 1:
-        project = arguments[0]
-    else:
-        project = 'caravel'
-
-    if '-debug' in optionlist:
-        debugmode = True
-    if '-keep' in optionlist:
-        keepmode = True
-
+    project = arguments[0] if len(arguments) == 1 else 'caravel'
+    debugmode = '-debug' in optionlist
+    keepmode = '-keep' in optionlist
     magdir = '../mag'
-    rcfile = magdir + '/.magicrc'
+    rcfile = f'{magdir}/.magicrc'
 
-    with open(magdir + '/compose_final.tcl', 'w') as ofile:
+    with open(f'{magdir}/compose_final.tcl', 'w') as ofile:
         print('#!/bin/env wish', file=ofile)
         print('drc off', file=ofile)
 
-        print('load ' + project + ' -dereference', file=ofile)
+        print(f'load {project} -dereference', file=ofile)
         print('select top cell', file=ofile)
 
         # Ceate a cell to represent the generated fill.  There are
@@ -79,18 +69,18 @@ if __name__ == '__main__':
         # actual data.  So it's just a placeholder.
 
         print('set bbox [box values]', file=ofile)
-        print('load ' + project + '_fill_pattern', file=ofile)
+        print(f'load {project}_fill_pattern', file=ofile)
         print('snap internal', file=ofile)
         print('box values {*}$bbox', file=ofile)
         print('paint comment', file=ofile)
-        print('property GDS_FILE ../gds/' + project + '_fill_pattern.gds', file=ofile)
+        print(f'property GDS_FILE ../gds/{project}_fill_pattern.gds', file=ofile)
         print('property GDS_START 0', file=ofile)
         print('property FIXED_BBOX "$bbox"', file=ofile)
 
         # Now go back to the project top level and place the fill cell.
-        print('load ' + project, file=ofile)
-        print('select top cell', file=ofile)	
-        print('getcell ' + project + '_fill_pattern child 0 0', file=ofile)
+        print(f'load {project}', file=ofile)
+        print('select top cell', file=ofile)
+        print(f'getcell {project}_fill_pattern child 0 0', file=ofile)
 
         # Move existing origin to (6um, 6um) for seal ring placement
         print('move origin -6um -6um', file=ofile)
@@ -102,21 +92,29 @@ if __name__ == '__main__':
         # Generate final GDS
         print('puts stdout "Writing final GDS. . . "', file=ofile)
         print('flush stdout', file=ofile)
-        print('gds write ../gds/' + project + '_final.gds', file=ofile)
+        print(f'gds write ../gds/{project}_final.gds', file=ofile)
         print('quit -noprompt', file=ofile)
 
     myenv = os.environ.copy()
     # Abstract views are appropriate for final composition
     myenv['MAGTYPE'] = 'maglef'
 
-    mproc = subprocess.run(['magic', '-dnull', '-noconsole',
-		'-rcfile', rcfile, magdir + '/compose_final.tcl'],
-		stdin = subprocess.DEVNULL,
-		stdout = subprocess.PIPE,
-		stderr = subprocess.PIPE,
-		cwd = magdir,
-		env = myenv,
-		universal_newlines = True)
+    mproc = subprocess.run(
+        [
+            'magic',
+            '-dnull',
+            '-noconsole',
+            '-rcfile',
+            rcfile,
+            f'{magdir}/compose_final.tcl',
+        ],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=magdir,
+        env=myenv,
+        universal_newlines=True,
+    )
     if mproc.stdout:
         for line in mproc.stdout.splitlines():
             print(line)
@@ -125,9 +123,9 @@ if __name__ == '__main__':
         for line in mproc.stderr.splitlines():
             print(line)
         if mproc.returncode != 0:
-            print('ERROR:  Magic exited with status ' + str(mproc.returncode))
+            print(f'ERROR:  Magic exited with status {str(mproc.returncode)}')
 
     if not keepmode:
-        os.remove(magdir + '/compose_final.tcl')
+        os.remove(f'{magdir}/compose_final.tcl')
 
     exit(0)

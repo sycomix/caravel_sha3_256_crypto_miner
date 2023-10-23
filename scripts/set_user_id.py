@@ -78,19 +78,17 @@ if __name__ == '__main__':
 
     # Coordinate pairs in microns for the zero position on each bit
     mask_rev = (
-	(14.49,  9.35), (16.33,  9.35), (10.35, 20.23), ( 8.05,  9.35),
-	(28.29,  9.35), (21.85, 25.67), ( 8.05, 20.23), (20.47,  9.35),
-	(17.25, 17.85), (25.53, 12.07), (22.31, 20.23), (13.11,  9.35),
-	(23.69, 23.29), (24.15, 12.07), (13.57, 17.85), (23.23,  6.97),
-	(24.15, 17.85), ( 8.51, 17.85), (23.69, 20.23), (10.81, 23.29),
-	(14.95,  6.97), (18.17, 23.29), (21.39, 17.85), (26.45, 25.67),
-	( 9.89, 17.85), (15.87, 17.85), (26.45, 17.85), ( 8.51,  6.97),
-	(10.81,  9.35), (27.83, 20.23), (16.33, 23.29), ( 8.05, 14.79));
+    (14.49,  9.35), (16.33,  9.35), (10.35, 20.23), ( 8.05,  9.35),
+    (28.29,  9.35), (21.85, 25.67), ( 8.05, 20.23), (20.47,  9.35),
+    (17.25, 17.85), (25.53, 12.07), (22.31, 20.23), (13.11,  9.35),
+    (23.69, 23.29), (24.15, 12.07), (13.57, 17.85), (23.23,  6.97),
+    (24.15, 17.85), ( 8.51, 17.85), (23.69, 20.23), (10.81, 23.29),
+    (14.95,  6.97), (18.17, 23.29), (21.39, 17.85), (26.45, 25.67),
+    ( 9.89, 17.85), (15.87, 17.85), (26.45, 17.85), ( 8.51,  6.97),
+    (10.81,  9.35), (27.83, 20.23), (16.33, 23.29), ( 8.05, 14.79));
 
     optionlist = []
     arguments = []
-
-    debugmode = False
 
     for option in sys.argv[1:]:
         if option.find('-', 0) == 0:
@@ -98,28 +96,22 @@ if __name__ == '__main__':
         else:
             arguments.append(option)
 
-    if len(arguments) != 1 and len(arguments) != 2:
-        if len(arguments) != 0:
+    if len(arguments) not in [1, 2]:
+        if arguments:
             print("Wrong number of arguments given to cleanup_unref.py.")
         usage()
         sys.exit(0)
 
-    if '-debug' in optionlist:
-        debugmode = True
-
+    debugmode = '-debug' in optionlist
     user_id_value = arguments[0]
 
     # Convert to binary
     user_id_bits = '{0:032b}'.format(int(user_id_value))
 
-    if len(arguments) == 2:
-        user_project_path = arguments[1]
-    else:
-        user_project_path = os.getcwd()
-
-    magpath = user_project_path + '/mag'
-    gdspath = user_project_path + '/gds'
-    vpath = user_project_path + '/verilog'
+    user_project_path = arguments[1] if len(arguments) == 2 else os.getcwd()
+    magpath = f'{user_project_path}/mag'
+    gdspath = f'{user_project_path}/gds'
+    vpath = f'{user_project_path}/verilog'
     errors = 0 
 
     if os.path.isdir(gdspath):
@@ -131,8 +123,8 @@ if __name__ == '__main__':
         # Read the GDS file.  If a backup was made of the zero-value
         # program, then use it.
 
-        gdsbak = gdspath + '/user_id_prog_zero.gds'
-        gdsfile = gdspath + '/user_id_programming.gds'
+        gdsbak = f'{gdspath}/user_id_prog_zero.gds'
+        gdsfile = f'{gdspath}/user_id_programming.gds'
 
         if os.path.isfile(gdsbak):
             with open(gdsbak, 'rb') as ifile:
@@ -157,7 +149,7 @@ if __name__ == '__main__':
             yllum = yum - 0.085
             xurum = xum + 0.085
             yurum = yum + 0.085
- 
+
             # Get the 4-byte hex values for the corner coordinates
             xllnm = round(xllum * 1000)
             yllnm = round(yllum * 1000)
@@ -172,7 +164,7 @@ if __name__ == '__main__':
             # corner and goes counterclockwise, repeating the first point.
             viaoldposdata = viarec + xllhex + yllhex + xurhex + yllhex
             viaoldposdata += xurhex + yurhex + xllhex + yurhex + xllhex + yllhex
-            
+
             # For "one" bits, the X position is moved 0.92 microns to the left
             newxllum = xllum - 0.92
             newxurum = xurum - 0.92
@@ -188,10 +180,10 @@ if __name__ == '__main__':
 
             # Diagnostic
             if debugmode:
-                print('Bit ' + str(i) + ':')
+                print(f'Bit {str(i)}:')
                 print('Via position ({0:3.2f}, {1:3.2f}) to ({2:3.2f}, {3:3.2f})'.format(xllum, yllum, xurum, yurum))
-                print('Old hex string = ' + viaoldposdata)
-                print('New hex string = ' + vianewposdata)
+                print(f'Old hex string = {viaoldposdata}')
+                print(f'New hex string = {vianewposdata}')
 
             # Convert hex strings to byte arrays
             viaoldbytedata = bytearray.fromhex(viaoldposdata)
@@ -199,8 +191,8 @@ if __name__ == '__main__':
 
             # Replace the old data with the new
             if viaoldbytedata not in gdsdata:
-                print('Error: via not found for bit position ' + str(i))
-                errors += 1 
+                print(f'Error: via not found for bit position {str(i)}')
+                errors += 1
             else:
                 gdsdata = gdsdata.replace(viaoldbytedata, vianewbytedata)
 
@@ -213,12 +205,12 @@ if __name__ == '__main__':
                 ofile.write(gdsdata)
 
             print('Done!')
-            
+
         else:
             print('There were errors in processing.  No file written.')
             sys.exit(1)
 
     else:
-        print('No directory ' + gdspath + ' found.')
+        print(f'No directory {gdspath} found.')
         sys.exit(1)
     sys.exit(0)
